@@ -140,6 +140,20 @@ extension AxUiElementMock {
             return false
         }
 
+        // Roam (video conferencing) draws button-less helper windows as AXStandardWindow:
+        // the "You are screen sharing" control bar and the "Annotations Overlay". Treat them as
+        // popups so AeroSpace leaves them in place and doesn't send them away on a workspace
+        // switch. Roam's real windows (main room, Participants) keep close/minimize buttons, so
+        // this button-less check doesn't touch them.
+        if id == .roam &&
+            get(Ax.closeButtonAttr) == nil &&
+            get(Ax.minimizeButtonAttr) == nil &&
+            get(Ax.zoomButtonAttr) == nil &&
+            get(Ax.fullscreenButtonAttr) == nil
+        {
+            return false
+        }
+
         if id?.isFirefox != true {
             return isWindowHeuristicOld(axApp: axApp, id)
         }
