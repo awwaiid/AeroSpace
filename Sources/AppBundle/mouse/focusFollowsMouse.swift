@@ -62,3 +62,49 @@ private nonisolated func isAxWindowUnderMouse(_ location: CGPoint) async -> Bool
     guard let element else { return nil }
     return element.get(Ax.parentWindowRecursive) != nil || element.get(Ax.roleAttr) == kAXWindowRole
 }
+
+@MainActor private var focusMonitorFollowsMouseMonitor: Any? = nil
+@MainActor private var focusMonitorFollowsTask: Task<(), any Error>? = nil
+
+@MainActor func syncFocusMonitorFollowsMouse(_ config: Config) {
+    if config.focusFollowsMouse.monitor == (focusMonitorFollowsMouseMonitor != nil) {
+        return
+    }
+
+    if !config.focusFollowsMouse.monitor {
+        NSEvent.removeMonitor(focusMonitorFollowsMouseMonitor.orDie())
+        focusMonitorFollowsMouseMonitor = nil
+        focusMonitorFollowsTask?.cancel()
+        focusMonitorFollowsTask = nil
+        return
+    }
+
+    focusMonitorFollowsMouseMonitor = NSEvent.addGlobalMonitorForEvents(matching: .mouseMoved) { @MainActor event in
+        let location = event.locationInWindow.withYAxisFlipped
+        let monitor = location.monitorApproximation
+        let workspace = monitor.activeWorkspace
+        // Cheap checks first: this callback fires on every mouse move
+        guard workspace != focus.workspace, monitor.visibleRect.contains(location) else { return }
+        focusMonitorFollowsTask?.cancel()
+        focusMonitorFollowsTask = Task.startUnstructured { @MainActor in
+            guard let token: RunSessionGuard = .isServerEnabled else { return }
+            // Windows under the mouse are left to focus-follows-mouse (built-in or external)
+            if location.findWindowRecursively(in: workspace.rootTilingContainer, virtual: false, fullscreenCoversAll: true) != nil { return }
+            for child in workspace.floatingWindowsContainer.children {
+                try checkCancellation()
+                guard let child = child as? Window else { continue }
+                if try await child.getAxRect(.cancellable)?.contains(location) == true { return }
+            }
+            try checkCancellation()
+            try await runLightSession(.focusFollowsMouse, token) {
+                _ = workspace.focusWorkspace()
+                // An empty workspace has nothing to receive native focus, so it would stay on the previous
+                // monitor's window (keystrokes would go there). Activate ourselves instead: we have no windows,
+                // and getNativeFocusedWindow ignores our own pid, so the model focus is kept
+                if focus.windowOrNil == nil {
+                    NSRunningApplication.current.activate(options: .activateIgnoringOtherApps)
+                }
+            }
+        }
+    }
+}
