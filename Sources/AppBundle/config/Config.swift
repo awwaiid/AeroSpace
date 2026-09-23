@@ -66,6 +66,7 @@ struct Config: Withable {
 
 struct FocusFollowsMouse: Withable {
     var enabled: Bool = false
+    var monitor: Bool = false
 }
 
 enum ConfigVersion: Int, Comparable, CaseIterable, Sendable, CustomStringConvertible {
