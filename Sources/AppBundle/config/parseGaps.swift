@@ -28,6 +28,8 @@ struct Gaps: ConvenienceMutable, Equatable, Sendable {
         var bottom: DynamicConfigValue<Int>
         var top: DynamicConfigValue<Int>
         var right: DynamicConfigValue<Int>
+        /// Overrides `top` for workspaces whose root container has tabs layout. nil means use `top`
+        var topTabs: DynamicConfigValue<Int>? = nil
 
         static let zero = Outer(left: 0, bottom: 0, top: 0, right: 0)
 
@@ -97,10 +99,15 @@ private let outerParser: [String: any ParserProtocol<Gaps.Outer>] = [
     "bottom": Parser(\.bottom, parseIntDynamicValue),
     "top": Parser(\.top, parseIntDynamicValue),
     "right": Parser(\.right, parseIntDynamicValue),
+    "top-tabs": Parser(\.topTabs, parseOptionalIntDynamicValue),
 ]
 
 private func parseIntDynamicValue(_ raw: OrderedJson, _ backtrace: ConfigBacktrace, _ c: inout ConfigParserContext) -> DynamicConfigValue<Int> {
     parseDynamicValue(raw, ofType: Int.self, 0, backtrace, &c)
+}
+
+private func parseOptionalIntDynamicValue(_ raw: OrderedJson, _ backtrace: ConfigBacktrace, _ c: inout ConfigParserContext) -> DynamicConfigValue<Int>? {
+    parseIntDynamicValue(raw, backtrace, &c)
 }
 
 func parseGaps(_ raw: OrderedJson, _ backtrace: ConfigBacktrace, _ c: inout ConfigParserContext) -> Gaps {
