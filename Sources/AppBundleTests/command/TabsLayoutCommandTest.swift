@@ -103,6 +103,23 @@ final class TabsLayoutCommandTest: XCTestCase {
         }
     }
 
+    func testFullscreenWindowHidesTabHeaders() async throws {
+        let workspace = Workspace.get(byName: name)
+        let root = workspace.rootTilingContainer.apply {
+            TestWindow.new(id: 1, parent: $0)
+            assertEquals(TestWindow.new(id: 2, parent: $0).focusWindow(), true)
+        }
+        root.layout = .tabs
+        let window = root.children[1] as! TestWindow
+        window.markAsMostRecentChild()
+
+        window.isFullscreen = true
+        assertEquals(try await workspace.layoutWorkspace().count, 0)
+
+        window.isFullscreen = false
+        assertEquals(try await workspace.layoutWorkspace().count, 1)
+    }
+
     func testTabHeaderTitleFallbacks() async throws {
         let workspace = Workspace.get(byName: name)
         let appWithoutName = TestNamelessApp()
