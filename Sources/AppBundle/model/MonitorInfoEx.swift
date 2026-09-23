@@ -2,14 +2,19 @@ import AppKit
 
 extension MonitorInfo {
     @MainActor
-    var visibleRectPaddedByOuterGaps: Rect {
+    var visibleRectPaddedByOuterGaps: Rect { visibleRectPaddedByOuterGaps(isTabsRoot: false) }
+
+    /// isTabsRoot: the workspace root container has tabs layout, so `gaps.outer.top-tabs` applies (if set)
+    @MainActor
+    func visibleRectPaddedByOuterGaps(isTabsRoot: Bool) -> Rect {
         let topLeft = visibleRect.topLeftCorner
         let gaps = ResolvedGaps(gaps: config.gaps, monitor: self)
+        let top = (isTabsRoot ? config.gaps.outer.topTabs?.getValue(for: self) : nil) ?? gaps.outer.top
         return Rect(
             topLeftX: topLeft.x + gaps.outer.left.toDouble(),
-            topLeftY: topLeft.y + gaps.outer.top.toDouble(),
+            topLeftY: topLeft.y + top.toDouble(),
             width: visibleRect.width - gaps.outer.left.toDouble() - gaps.outer.right.toDouble(),
-            height: visibleRect.height - gaps.outer.top.toDouble() - gaps.outer.bottom.toDouble(),
+            height: visibleRect.height - top.toDouble() - gaps.outer.bottom.toDouble(),
         )
     }
 

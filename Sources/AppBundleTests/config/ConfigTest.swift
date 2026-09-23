@@ -532,6 +532,20 @@ struct ConfigTest {
         ])
     }
 
+    @Test func testParseGapsOuterTopTabs() {
+        assertEquals(parseConfig("[gaps]\nouter.top = 10").config.gaps.outer.topTabs, nil)
+        let result = parseConfig(
+            """
+            [gaps]
+                outer.top = 10
+                outer.top-tabs = [{ monitor.main = 10 }, 0]
+            """,
+        )
+        assertEquals(result.errors, [])
+        assertEquals(result.config.gaps.outer.top, .constant(10))
+        assertEquals(result.config.gaps.outer.topTabs, .perMonitor([PerMonitorValue(description: .main, value: 10)], default: 0))
+    }
+
     @Test func testAfterLoginCommandDeprecation() {
         let result = parseConfig(
             """

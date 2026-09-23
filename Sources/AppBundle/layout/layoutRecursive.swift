@@ -5,7 +5,7 @@ extension Workspace {
     @MainActor
     func layoutWorkspace() async throws -> [TabHeaderSnapshot] {
         if isEffectivelyEmpty { return [] }
-        let rect = workspaceMonitorInfo.visibleRectPaddedByOuterGaps
+        let rect = workspaceMonitorInfo.visibleRectPaddedByOuterGaps(isTabsRoot: rootTilingContainer.layout == .tabs)
         let context = LayoutContext(self)
         // If monitors are aligned vertically and the monitor below has smaller width, then macOS may not allow the
         // window on the upper monitor to take full width. rect.height - 1 resolves this problem

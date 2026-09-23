@@ -95,6 +95,9 @@ gaps.outer.left =       0
 gaps.outer.bottom =     0
 gaps.outer.top =        0
 gaps.outer.right =      0
+# Optional. Replaces gaps.outer.top on workspaces whose root container has 'tabs' layout
+# (the tab strip is drawn inside the workspace area). Accepts the same values as above
+# gaps.outer.top-tabs =   0
 
 # 'main' binding mode declaration
 # See: https://nikitabobko.github.io/AeroSpace/guide#binding-modes
