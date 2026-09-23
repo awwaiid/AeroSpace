@@ -65,6 +65,7 @@ private struct TabHeaderStripView: View {
             RoundedRectangle(cornerRadius: TabHeaderMetrics.cornerRadius, style: .continuous)
                 .fill(Color.black.opacity(0.75))
             ForEach(snapshot.items) { item in
+                let hitFrame = hitFrame(for: item)
                 ZStack(alignment: .topLeading) {
                     RoundedRectangle(cornerRadius: TabHeaderMetrics.cornerRadius, style: .continuous)
                         .fill(item.isActive ? Color.white.opacity(0.18) : Color.white.opacity(0.08))
@@ -94,7 +95,8 @@ private struct TabHeaderStripView: View {
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .frame(width: item.frame.width, height: item.frame.height)
+                    .frame(width: hitFrame.width, height: hitFrame.height)
+                    .offset(x: hitFrame.topLeftX - item.frame.topLeftX, y: hitFrame.topLeftY - item.frame.topLeftY)
 
                     Button {
                         close(item.targetWindow)
@@ -119,6 +121,12 @@ private struct TabHeaderStripView: View {
             }
         }
         .frame(width: snapshot.headerFrame.width, height: snapshot.headerFrame.height, alignment: .topLeading)
+    }
+
+    /// The clickable area of the tab. Unlike the drawn tab, it spans the whole header height, so that a click on the
+    /// screen edge (Fitts's law) still hits the tab
+    private func hitFrame(for item: TabHeaderItem) -> Rect {
+        Rect(topLeftX: item.frame.topLeftX, topLeftY: 0, width: item.frame.width, height: snapshot.headerFrame.height)
     }
 
     private func activate(_ window: Window) {
