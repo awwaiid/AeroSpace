@@ -1,3 +1,26 @@
+> [!NOTE]
+> **This is [awwaiid](https://github.com/awwaiid)'s personal custom build of AeroSpace (branch `custom-build`).**
+> It's upstream [nikitabobko/AeroSpace](https://github.com/nikitabobko/AeroSpace) plus the
+> scrolling and tabs layouts from [vadika/AeroSpace `codex/tabs-layout`](https://github.com/vadika/AeroSpace/tree/codex/tabs-layout)
+> (upstream PR [#2057](https://github.com/nikitabobko/AeroSpace/pull/2057)), with these local changes on top:
+>
+> - **`focus-follows-mouse.monitor = true`**: moving the mouse over a part of another monitor that isn't covered
+>   by a window focuses that monitor's workspace, the same as clicking its desktop. If that workspace is empty,
+>   keyboard focus is taken off the previous monitor's window. Meant for use with external focus-follows-mouse
+>   tools such as [AutoRaise](https://github.com/sbmpost/AutoRaise), which only react to windows.
+> - **Tab bars are hidden while the workspace's window is `fullscreen`**, instead of being drawn on top of it.
+> - **`gaps.outer.top-tabs`**: an optional top gap (constant or per-monitor, like the other gaps) used instead of
+>   `gaps.outer.top` on workspaces whose root container has the `tabs` layout, e.g.
+>   `gaps.outer.top-tabs = [{ monitor.main = 10 }, 0]` to put the tab bar flush against the top of secondary monitors.
+> - **Tab click targets span the full height of the tab bar**, so clicking with the mouse pushed against the top
+>   of the screen still hits the tab.
+> - **`summon-workspace --when-visible (focus|swap)`**: what to do when the workspace is already visible on another monitor.
+> - **Roam's screen-sharing bar and annotation overlay are treated as popups** (not managed), so they aren't
+>   moved off-screen on workspace switches.
+> - Build fixes: the release build compiles with Swift 6.3 (Xcode 26.6), and `build-release.sh` works without swiftly installed.
+>
+> Build and install with `./install-from-sources.sh`, then restart AeroSpace.app.
+
 # AeroSpace Beta [![Build](https://github.com/nikitabobko/AeroSpace/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/nikitabobko/AeroSpace/actions/workflows/build.yml)
 
 <img src="./resources/Assets.xcassets/AppIcon.appiconset/icon.png" width="40%" align="right">
