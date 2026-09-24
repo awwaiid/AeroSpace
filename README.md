@@ -1,3 +1,17 @@
+> [!NOTE]
+> **awwaiid's custom build** (branch `custom-build`): upstream [nikitabobko/AeroSpace](https://github.com/nikitabobko/AeroSpace) with
+> the scrolling/tabs layouts from [vadika `codex/tabs-layout`](https://github.com/vadika/AeroSpace/tree/codex/tabs-layout)
+> ([#2057](https://github.com/nikitabobko/AeroSpace/pull/2057)), plus:
+>
+> - `summon-workspace --when-visible (focus|swap)` ([#1349](https://github.com/nikitabobko/AeroSpace/pull/1349))
+> - `focus-follows-mouse.monitor`: focus the monitor under the mouse when it's over no window (for AutoRaise)
+> - Tabs: `gaps.outer.top-tabs`, tab bar hidden while `fullscreen`, full-height tab click targets
+> - Fix: crash (stack overflow) when plugging/unplugging monitors
+> - Fix: closing a fullscreen/floating window (e.g. Flameshot overlay) focused the first tab instead of the last used
+> - Roam's screen-share bar/overlay treated as popups
+>
+> Maintenance notes: `.claude/skills/maintain-fork/SKILL.md`.
+
 # AeroSpace Beta [![Build](https://github.com/nikitabobko/AeroSpace/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/nikitabobko/AeroSpace/actions/workflows/build.yml)
 
 <img src="./resources/Assets.xcassets/AppIcon.appiconset/icon.png" width="40%" align="right">
