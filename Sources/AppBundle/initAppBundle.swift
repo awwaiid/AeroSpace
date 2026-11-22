@@ -26,6 +26,7 @@ import Foundation
                 .min()?
                 .focusWorkspace()
         }
+        loadPersistentLayoutForStartup()
         await runHeavyCompleteRefreshSession(
             .startup,
             // It's important for the first initialization to be non cancellable
@@ -34,9 +35,12 @@ import Foundation
             layoutWorkspaces: false,
         )
         try await runLightSession(.startup, .forceRun) {
-            smartLayoutAtStartup()
+            if try await !restorePersistentLayoutAtStartup() {
+                smartLayoutAtStartup()
+            }
             _ = await config.afterStartupCommand.run(.defaultEnv, .emptyStdin)
         }
+        startPersistentLayoutSaving()
     }
 }
 

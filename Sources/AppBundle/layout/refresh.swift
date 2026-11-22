@@ -43,6 +43,7 @@ func runHeavyCompleteRefreshSession(
 
             await refreshModel_nonCancellable()
             try await refresh()
+            try await restorePersistentLayoutForLateWindows()
             gcMonitors()
 
             updateTrayText()
