@@ -127,6 +127,25 @@ struct TabsLayoutCommandTest {
         }
     }
 
+    @Test func testFocusReturnsToSelectedTabAfterMacosFullscreenWindowCloses() {
+        // E.g. a screenshot tool's full-screen overlay: it lands in the macOS fullscreen container, and closing it
+        // must give focus back to the selected tab, not to the first one
+        let workspace = Workspace.get(byName: name)
+        let root = workspace.rootTilingContainer.apply {
+            TestWindow.new(id: 1, parent: $0)
+            TestWindow.new(id: 2, parent: $0)
+            TestWindow.new(id: 3, parent: $0)
+        }
+        root.layout = .tabs
+        assertEquals((root.children[1] as! TestWindow).focusWindow(), true)
+
+        let overlay = TestWindow.new(id: 4, parent: workspace.macOsNativeFullscreenWindowsContainer)
+        assertEquals(overlay.focusWindow(), true)
+        overlay.closeAxWindow()
+
+        assertEquals(workspace.toLiveFocus().windowOrNil?.windowId, 2)
+    }
+
     @Test func testFullscreenWindowHidesTabHeaders() async throws {
         let workspace = Workspace.get(byName: name)
         let root = workspace.rootTilingContainer.apply {

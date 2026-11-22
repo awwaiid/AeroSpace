@@ -92,9 +92,11 @@ extension Workspace {
     @MainActor func focusWorkspace() -> Bool { setFocus(to: toLiveFocus()) }
 
     func toLiveFocus() -> LiveFocus {
-        // todo unfortunately mostRecentWindowRecursive may recursively reach empty rootTilingContainer
-        //      while floating or macos unconventional windows might be presented
-        if let wd = mostRecentWindowRecursive ?? anyLeafWindowRecursive {
+        // The most recent child may be an empty container: e.g. the empty rootTilingContainer while floating windows
+        // are presented, or the macOS fullscreen container right after its window (e.g. a screenshot overlay) closed.
+        // Take the most recent child that still has a window. anyLeafWindowRecursive (the first window in the tree)
+        // is the last resort: in a tabs/accordion container it would jump to the first tab
+        if let wd = _mruChildren.lazy.compactMap({ $0.mostRecentWindowRecursive }).first ?? anyLeafWindowRecursive {
             LiveFocus(windowOrNil: wd, workspace: self)
         } else {
             LiveFocus(windowOrNil: nil, workspace: self) // emptyWorkspace
