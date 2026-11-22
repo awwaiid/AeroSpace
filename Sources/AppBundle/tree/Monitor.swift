@@ -24,7 +24,11 @@ final class Monitor: TreeNode, NonLeafTreeNodeObject {
 }
 
 @MainActor private func rearrangeMonitors() {
-    var newMonitorPoints = globalUnsortedMonitorInfos.grouped(by: { $0.rect.topLeftCorner }).mapValues { $0.singleOrNil().orDie() }
+    let newMonitorInfos = globalUnsortedMonitorInfos
+    // NSScreen.screens may be transiently empty while displays are (un)plugged. Keep the old monitors until the
+    // next refresh instead of dying on the missing main monitor below
+    if newMonitorInfos.isEmpty && !pointToMonitor.isEmpty { return }
+    var newMonitorPoints = newMonitorInfos.grouped(by: { $0.rect.topLeftCorner }).mapValues { $0.singleOrNil().orDie() }
 
     var oldPointToMonitor = pointToMonitor
     pointToMonitor = [:]
@@ -93,13 +97,19 @@ extension MonitorInfo {
     }
 
     @MainActor func toMonitorOrRearrangeMonitors() -> Monitor {
-        if let existing = pointToMonitor[rect.topLeftCorner] {
+        let point = rect.topLeftCorner
+        if let existing = pointToMonitor[point] {
             return existing
         }
         rearrangeMonitors() // If monitor configuration changed
-        // Normally, recursion should happen only once more because we must take the value from the cache
-        // (Unless, monitor configuration data race happens)
-        return self.toMonitorOrRearrangeMonitors()
+        if let existing = pointToMonitor[point] {
+            return existing
+        }
+        // `self` is stale: it was captured before a monitor configuration change that is still in flight
+        // (NSScreen.screens, and the main monitor height used to flip the y-axis, change between reads while displays
+        // are (un)plugged). Retrying until the point shows up used to overflow the stack, so settle for the closest
+        // monitor. The next refresh session re-syncs
+        return pointToMonitor.minBy { ($0.key - point).vectorLength }.orDie("No monitors").value
     }
 
     @MainActor func setVisibleWorkspace(_ workspace: Workspace) -> Bool { // todo revisit this API (new name: setVisibleWorkspace)
