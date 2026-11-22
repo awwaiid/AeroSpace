@@ -9,6 +9,8 @@
 > - Fix: crash (stack overflow) when plugging/unplugging monitors
 > - Fix: closing a fullscreen/floating window (e.g. Flameshot overlay) focused the first tab instead of the last used
 > - Roam's screen-share bar/overlay treated as popups
+> - Window placement survives restarts: saved to `~/Library/Application Support/AeroSpace/layout.json`, restored by
+>   window id after an AeroSpace restart, or by app + title for windows reopened at login after a reboot
 >
 > Maintenance notes: `.claude/skills/maintain-fork/SKILL.md`.
 

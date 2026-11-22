@@ -68,7 +68,8 @@ The README note at the top of README.md lists every local change. Keep it curren
   `rm -rf xcode/.xcode-build/SourcePackages` for the xcodebuild side.
 - build-release.sh aborts on a dirty tree (`check-uncommitted-files.sh`), and it regenerates
   `xcode/AeroSpace.xcodeproj`, so commit everything first.
-- Installing updates the CLI only. The running server needs a restart, which loses window layout, so **ask before**:
+- Installing updates the CLI only. The running server needs a restart (layout is restored from `layout.json`, but
+  still **ask before**):
   `osascript -e 'quit app "AeroSpace"'; open -a AeroSpace`
 
 ## Debugging tips that paid off
@@ -90,5 +91,13 @@ The README note at the top of README.md lists every local change. Keep it curren
 - Fix: `MonitorInfo.toMonitorOrRearrangeMonitors()` falls back to the closest monitor instead of recursing (crash
   on display hotplug); rearrange skipped when `NSScreen.screens` is empty. **Still unfixed upstream**: check
   upstream before dropping.
+- Persistent layout (`tree/frozen/persistentLayout.swift` = model/capture/restore, `persistentLayoutStore.swift` =
+  file, timer, startup/late-window hooks). Hooks in upstream code: `initAppBundle.swift` (load before the startup
+  refresh, restore instead of `smartLayoutAtStartup`, start saving), `refresh.swift` (late windows after `refresh()`),
+  `appBundleUtil.swift` (save in `beforeTermination`). Windows are keyed by **native** window id
+  (`macApp.nativeWindowId(of:)`); `OpaqueWindowId` is a per-process counter and useless across restarts. Same boot
+  (`kern.bootsessionuuid`) → match by native id; after reboot → app bundle id + exact title, only within 90s of startup.
+  Saving pauses while locked, during a pending restore, and after `willPowerOff`. A leftover `layout.restoring`
+  marker means the last restore crashed and the next start skips restoring. To reset: delete `layout.json`.
 - Fix: `Workspace.toLiveFocus()` walks MRU children for one that has a window (focus jumped to the first tab after
   a fullscreen/floating window such as a Flameshot overlay closed). **Still unfixed upstream.**
